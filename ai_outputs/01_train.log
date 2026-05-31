@@ -1,0 +1,40 @@
+CUDA_VISIBLE_DEVICES=0 python ai_scripts/train.py --epochs 8 --batch_size 32 --patience 2
+============================================================
+最终模型训练模式
+============================================================
+设备: cuda
+类别加权: True | 梯度裁剪: 1.0
+模式: 分层划分 (dev_ratio=0.1) | 训练 2556 / dev 284
+选择指标: macro_f1 | 早停 patience: 2
+  类别加权损失 weight=[0.887, 1.145]
+Loading weights: 100%|██████████████████████████████████████████████████████████████| 199/199 [00:00<00:00, 27740.84it/s]
+RobertaModel LOAD REPORT from: cardiffnlp/twitter-roberta-base
+Key                       | Status     |  | 
+--------------------------+------------+--+-
+lm_head.decoder.weight    | UNEXPECTED |  | 
+lm_head.bias              | UNEXPECTED |  | 
+lm_head.layer_norm.weight | UNEXPECTED |  | 
+lm_head.dense.bias        | UNEXPECTED |  | 
+lm_head.layer_norm.bias   | UNEXPECTED |  | 
+lm_head.decoder.bias      | UNEXPECTED |  | 
+lm_head.dense.weight      | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+  Epoch 1/8 | loss=0.6180 | dev_acc=0.8204 | dev_f1=0.7952 | dev_macro_f1=0.8177 | 耗时=6.8s
+    ↑ macro_f1 提升至 0.8177，已保存最佳模型
+  Epoch 2/8 | loss=0.3555 | dev_acc=0.8451 | dev_f1=0.8254 | dev_macro_f1=0.8431 | 耗时=6.6s
+    ↑ macro_f1 提升至 0.8431，已保存最佳模型
+  Epoch 3/8 | loss=0.2328 | dev_acc=0.8451 | dev_f1=0.8151 | dev_macro_f1=0.8409 | 耗时=6.7s
+  Epoch 4/8 | loss=0.1549 | dev_acc=0.8521 | dev_f1=0.8250 | dev_macro_f1=0.8485 | 耗时=6.6s
+    ↑ macro_f1 提升至 0.8485，已保存最佳模型
+  Epoch 5/8 | loss=0.1000 | dev_acc=0.8592 | dev_f1=0.8261 | dev_macro_f1=0.8539 | 耗时=6.7s
+    ↑ macro_f1 提升至 0.8539，已保存最佳模型
+  Epoch 6/8 | loss=0.0560 | dev_acc=0.8697 | dev_f1=0.8502 | dev_macro_f1=0.8675 | 耗时=6.7s
+    ↑ macro_f1 提升至 0.8675，已保存最佳模型
+  Epoch 7/8 | loss=0.0441 | dev_acc=0.8592 | dev_f1=0.8319 | dev_macro_f1=0.8554 | 耗时=6.7s
+  Epoch 8/8 | loss=0.0211 | dev_acc=0.8592 | dev_f1=0.8291 | dev_macro_f1=0.8546 | 耗时=6.7s
+    ⏹ 连续 2 轮无提升，早停于 epoch 8
+
+最终模型 = 最佳 epoch 6（dev macro_f1=0.8675）
+  dev 指标: acc=0.8697, f1=0.8502, macro_f1=0.8675, balanced_acc=0.8671
