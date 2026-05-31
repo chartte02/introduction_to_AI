@@ -1,0 +1,60 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.python-version
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Test / cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# ML artifacts / outputs
+outputs/
+artifacts/
+checkpoints/
+models/
+wandb/
+mlruns/
+
+# Local env / secrets
+.env
+.env.*
+*.local
+
+# Temporary files
+*.tmp
+*.temp
+
+# Local history plugin files
+.history/
+
+AGENTS.md
