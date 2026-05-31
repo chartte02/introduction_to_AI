@@ -12,51 +12,121 @@
 
 详细要求见 [doc/guidance.md](doc/guidance.md)。
 
-## 当前仓库结构
+## 仓库结构
 
 ```text
 .
 ├─ data/
-│  ├─ train.csv
-│  └─ val.csv
+│  ├─ train.csv              # 训练集（2840 条推文，7 个事件）
+│  └─ val.csv                # 验证集（401 条推文）
 ├─ doc/
-│  ├─ guidance.md
-│  └─ template.md
-└─ AGENTS.md
+│  ├─ guidance.md             # 课程任务说明
+│  ├─ template.md             # 大作业报告模板
+│  └─ division.md             # 小组分工
+├─ ai_model/                  # 核心模型代码
+│  ├─ preprocessing.py        # 文本预处理 pipeline（5 步清洗）
+│  ├─ data.py                 # 数据加载 + 留一事件交叉验证划分
+│  ├─ model.py                # BERT 分类器（twitter-roberta-base + 分类头）
+│  └─ trainer.py              # 训练、评估、交叉验证、最终模型训练
+├─ ai_scripts/                # 运行入口
+│  ├─ train.py                # 训练入口（支持 --cv 交叉验证 / 全量训练）
+│  ├─ eval.py                 # 评估入口（在 val.csv 上报告指标）
+│  ├─ predict.py              # 单条推理入口（交互式 / 命令行）
+│  └─ run_cv.py               # 便捷 CV 训练脚本（含日志输出）
+├─ ai_outputs/                # 模型权重与评估产物（.gitignore 忽略）
+├─ .venv/                     # Python 虚拟环境（.gitignore 忽略）
+├─ requirements.txt
+├─ AGENTS.md                  # AI 编码代理工作指引
+└─ README.md
 ```
 
 ## 数据说明
 
-当前数据包含以下字段：
+字段：
 
 - `id`：样本 ID
-- `text`：输入文本
-- `label`：监督标签（0/1）
-- `event`：事件标识
+- `text`：输入文本（推文）
+- `label`：监督标签（0=非谣言, 1=谣言）
+- `event`：事件标识（0-6，对应 7 个真实世界新闻事件）
 
-## 开发建议（初始化阶段）
+## 环境搭建
 
-建议后续补充如下目录：
+```bash
+# 1. 创建虚拟环境
+python -m venv .venv
 
-- `src/`：模型、训练、推理、解释生成逻辑
-- `scripts/`：训练与评估入口脚本
-- `outputs/`：预测结果与评估产物（已在 `.gitignore` 忽略）
+# 2. 激活虚拟环境（Windows Git Bash）
+source .venv/Scripts/activate
 
-## 运行环境建议
+# 3. 安装依赖
+pip install -r requirements.txt
 
-- Python 3.10+
-- 常见依赖：pandas, scikit-learn, torch, transformers（按方案选择）
+# 4. 配置 HuggingFace 镜像（国内环境）
+export HF_ENDPOINT=https://hf-mirror.com
+export no_proxy="*"
+```
 
-## 后续里程碑
+## 运行命令
 
-- 完成最小可运行基线（训练 + 在 `val.csv` 评估）
-- 增加解释生成模块（规则、检索增强或大模型）
-- 在报告模板中补充结果分析与可解释性分析
+### 训练
 
-## 提交要求提醒
+```bash
+# 留一事件交叉验证（7 折，评估泛化能力）
+python ai_scripts/train.py --cv
 
-最终提交请确保仓库至少包含：
+# 在全部训练集上训练最终模型
+python ai_scripts/train.py
 
-- `README.md`（环境与运行说明）
-- `report.pdf`（参考 [doc/template.md](doc/template.md)）
+# 指定超参
+python ai_scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5 --cv
+```
+
+### 评估
+
+```bash
+# 在 val.csv 上评估最终模型
+python ai_scripts/eval.py
+
+# 评估指定模型
+python ai_scripts/eval.py --model ai_outputs/final_model.pt --data data/val.csv
+```
+
+### 推理
+
+```bash
+# 交互式推理
+python ai_scripts/predict.py
+
+# 单条推理
+python ai_scripts/predict.py --text "BREAKING: Ferguson police chief says..."
+```
+
+## 技术方案
+
+### 分类模型
+
+- 模型：`cardiffnlp/twitter-roberta-base`（1.25 亿参数，推文语料预训练）
+- 分类头：`[CLS] vector → Dropout(0.1) → Linear(768, 2)`
+- 预处理：HTML 解码 → URL→`[URL]` → @mention→`@USER` → `#` 去除 → 空白合并
+
+### 训练策略
+
+- **留一事件交叉验证**（Leave-One-Event-Out CV）：7 折，每折用 6 个事件训练、1 个 held-out 事件验证，确保模型泛化到未见过的事件
+- **最终模型**：在全部 train.csv 上训练，val.csv 上评估
+
+### 解释生成
+
+- 使用 SJTU 校内大模型 API（`claw.sjtu.edu.cn`）生成判断依据
+- 架构：BERT 分类器 → 标签 + 原文 → LLM → 判断依据文本
+
+## 运行环境
+
+- Python 3.8+
+- 依赖：transformers, torch, pandas, scikit-learn
+- 模型：首次运行自动下载 ~500MB 模型文件
+
+## 提交清单
+
+- `README.md`：环境与运行说明（本文件）
+- `report.pdf`：大作业报告（参考 doc/template.md）
 - 可复现代码与必要支持文件

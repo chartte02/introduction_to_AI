@@ -1,0 +1,7 @@
+# 核心依赖
+transformers>=4.30.0
+torch>=2.0.0
+
+# 数据处理
+pandas
+scikit-learn
