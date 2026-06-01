@@ -13,9 +13,9 @@ import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
-from ai_model.preprocessing import clean_text
+from model.preprocessing import clean_text
 
-# 项目根目录（相对于本文件位置：ai_model/data.py → 项目根）
+# 项目根目录（相对于本文件位置：model/data.py → 项目根）
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 

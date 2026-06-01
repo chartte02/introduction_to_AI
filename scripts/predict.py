@@ -3,10 +3,10 @@
 
 用法：
     # 交互式推理
-    python ai_scripts/predict.py
+    python scripts/predict.py
 
     # 单条推理
-    python ai_scripts/predict.py --text "BREAKING: Ferguson police chief says..."
+    python scripts/predict.py --text "BREAKING: Ferguson police chief says..."
 """
 
 import argparse
@@ -27,8 +27,8 @@ os.environ.setdefault("no_proxy", "*")
 import torch
 from transformers import AutoTokenizer
 
-from ai_model.preprocessing import clean_text
-from ai_model.model import RumorClassifier
+from model.preprocessing import clean_text
+from model.model import RumorClassifier
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -77,7 +77,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default=str(PROJECT_ROOT / "ai_outputs" / "final_model.pt"),
+        default=str(PROJECT_ROOT / "outputs" / "final_model.pt"),
         help="模型文件路径",
     )
     parser.add_argument("--text", type=str, default=None, help="待检测的推文文本")

@@ -3,18 +3,18 @@
 
 用法：
     # 运行留一事件交叉验证
-    python ai_scripts/train.py --cv
+    python scripts/train.py --cv
 
     # 在全部训练集上训练最终模型
-    python ai_scripts/train.py
+    python scripts/train.py
 
     # 指定模型和其他超参
-    python ai_scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5
+    python scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5
 """
 
 import argparse
 
-from ai_model.trainer import run_cross_validation, train_final_model
+from model.trainer import run_cross_validation, train_final_model
 
 
 def main():

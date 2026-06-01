@@ -14,7 +14,7 @@
     │
     ├─→ [预处理 pipeline] ──→ 清洗后文本
     │
-    ├─→ [BERT 分类器] ──→ label (0/1)          ← ai_model/
+    ├─→ [BERT 分类器] ──→ label (0/1)          ← model/
     │
     └─→ [SJTU LLM API] ──→ 判断依据文本          ← 用户自行集成
 ```
@@ -134,10 +134,10 @@ Fold 7: train=[0,1,2,3,4,5], val=[6]   → 在 event 6 上评估
 
 ```bash
 # 交叉验证
-python ai_scripts/train.py --cv --epochs 5
+python scripts/train.py --cv --epochs 5
 
 # 全量训练最终模型
-python ai_scripts/train.py --epochs 5
+python scripts/train.py --epochs 5
 ```
 
 ---
@@ -158,10 +158,10 @@ python ai_scripts/train.py --epochs 5
 
 ```bash
 # 交互式
-python ai_scripts/predict.py
+python scripts/predict.py
 
 # 命令行单条
-python ai_scripts/predict.py --text "推文内容"
+python scripts/predict.py --text "推文内容"
 
 # 输出示例
 # → 谣言（置信度: 0.8723）
@@ -205,14 +205,14 @@ BERT label + text → SJTU LLM API → 判断依据文本
 
 | 文件 | 职责 |
 |------|------|
-| `ai_model/preprocessing.py` | 5 步文本清洗 |
-| `ai_model/data.py` | CSV 加载、RumorDataset、CV fold 划分 |
-| `ai_model/model.py` | RumorClassifier（RoBERTa + 分类头） |
-| `ai_model/trainer.py` | train_epoch / evaluate / CV / final_train |
-| `ai_scripts/train.py` | 训练入口（--cv 启停交叉验证） |
-| `ai_scripts/eval.py` | 评估入口 |
-| `ai_scripts/predict.py` | 单条推理入口 |
-| `ai_scripts/run_cv.py` | 便捷 CV 训练（含日志文件输出） |
+| `model/preprocessing.py` | 5 步文本清洗 |
+| `model/data.py` | CSV 加载、RumorDataset、CV fold 划分 |
+| `model/model.py` | RumorClassifier（RoBERTa + 分类头） |
+| `model/trainer.py` | train_epoch / evaluate / CV / final_train |
+| `scripts/train.py` | 训练入口（--cv 启停交叉验证） |
+| `scripts/eval.py` | 评估入口 |
+| `scripts/predict.py` | 单条推理入口 |
+| `scripts/run_cv.py` | 便捷 CV 训练（含日志文件输出） |
 
 ---
 

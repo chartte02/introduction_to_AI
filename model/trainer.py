@@ -37,18 +37,18 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, get_linear_schedule_with_warmup
 
-from ai_model.data import (
+from model.data import (
     load_data,
     get_event_folds,
     build_fold_datasets,
     RumorDataset,
     SEED,
 )
-from ai_model.model import RumorClassifier
+from model.model import RumorClassifier
 
 # 路径常量
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-OUTPUTS_DIR = PROJECT_ROOT / "ai_outputs"
+OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 
 # 固定随机种子
 torch.manual_seed(SEED)
