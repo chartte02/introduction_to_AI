@@ -1,5 +1,5 @@
 """文本预处理模块。
-实现预处理 pipeline:
+实现预处理pipeline:
   原始推文 → HTML解码 → URL替换 → @mention替换 → #去除 → 空白合并 → BERT Tokenizer
 """
 
@@ -21,19 +21,19 @@ def clean_text(text: str) -> str:
     Returns:
         清洗后的文本。
     """
-    # 1. HTML 实体解码：&amp; → & 等
+    #HTML解码
     text = html.unescape(text)
 
-    # 2. URL → [URL]
+    #URL → [URL]
     text = URL_PATTERN.sub("[URL]", text)
 
-    # 3. @mention → @USER
+    #@mention → @USER
     text = MENTION_PATTERN.sub("@USER", text)
 
-    # 4. 去除 # 符号，保留标签文字
+    #去除 # 符号，保留标签文字
     text = text.replace("#", "")
 
-    # 5. 合并多余空白
+    #合并多余空白
     text = re.sub(r"\s+", " ", text).strip()
 
     return text
