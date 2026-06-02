@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
 """评估入口脚本。
-
 用法：
-    # 在 val.csv 上评估最终模型
-    python scripts/eval.py
-
     # 评估指定模型和数据集
     python scripts/eval.py --model outputs/final_model.pt --data data/val.csv
 """
@@ -16,7 +11,6 @@ import os
 import sys
 from pathlib import Path
 
-# 确保项目根目录在 sys.path 上（支持直接运行 python ai_scripts/eval.py）
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Windows 控制台 UTF-8 输出
@@ -24,7 +18,6 @@ if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
-# 国内环境 HuggingFace 镜像配置（必须在 import transformers 之前）
 os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 os.environ.setdefault("no_proxy", "*")
 

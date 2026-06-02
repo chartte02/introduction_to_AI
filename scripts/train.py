@@ -51,6 +51,10 @@ def main():
                         help="从训练集分层切出的 dev 集比例（<=0 则全量训练并保存最后一轮）")
     parser.add_argument("--patience", type=int, default=2, help="早停容忍轮数")
 
+    # 输出名：避免并行训练不同 backbone 时互相覆盖
+    parser.add_argument("--output_name", type=str, default="final_model",
+                        help="权重与 tokenizer 输出名前缀，写入 outputs/{output_name}.pt 与 outputs/tokenizer_{output_name}/")
+
     parser.add_argument("--cv", action="store_true", help="运行留一事件交叉验证（7折）")
     parser.add_argument("--device", type=str, default=None, help="设备（cuda/cpu），默认自动检测")
 
@@ -92,6 +96,7 @@ def main():
             select_metric=args.select_metric,
             dev_ratio=args.dev_ratio,
             patience=args.patience,
+            output_name=args.output_name,
             device=args.device,
         )
 

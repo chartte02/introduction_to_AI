@@ -27,14 +27,20 @@ os.environ.setdefault("no_proxy", "*")
 import torch
 from transformers import AutoTokenizer
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from model.preprocessing import clean_text
 from model.model import RumorClassifier
+from model.trainer import load_threshold
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def predict_single(text: str, model: RumorClassifier, tokenizer, device: str, max_length: int = 128) -> dict:
     """对单条推文进行推理。
+
+    判定规则：P(谣言) > τ，其中 τ 由 outputs/threshold.json 提供；
+    未校准时回退到 0.5，等价于原 argmax 行为。
 
     Args:
         text: 原始推文文本。
@@ -44,7 +50,7 @@ def predict_single(text: str, model: RumorClassifier, tokenizer, device: str, ma
         max_length: token 最大长度。
 
     Returns:
-        {"label": 0/1, "label_name": "谣言"/"非谣言", "confidence": 0.XX}
+        {"label": 0/1, "label_name": "谣言"/"非谣言", "confidence": 0.XX, "threshold": τ}
     """
     clean = clean_text(text)
     encoded = tokenizer(
@@ -58,17 +64,19 @@ def predict_single(text: str, model: RumorClassifier, tokenizer, device: str, ma
     input_ids = encoded["input_ids"].to(device)
     attention_mask = encoded["attention_mask"].to(device)
 
+    threshold = load_threshold()
     model.eval()
     with torch.no_grad():
         logits = model(input_ids, attention_mask)
         probs = torch.softmax(logits, dim=1)
-        pred = torch.argmax(logits, dim=1).item()
+        pred = 1 if probs[0, 1].item() > threshold else 0
         confidence = probs[0, pred].item()
 
     return {
         "label": pred,
         "label_name": "谣言" if pred == 1 else "非谣言",
         "confidence": confidence,
+        "threshold": threshold,
     }
 
 
