@@ -3,6 +3,7 @@
 提供：
   - load_data()：从 CSV 加载并清洗文本
   - get_event_folds()：按事件分组，生成留一事件交叉验证的 train/val 划分
+  - stratified_split()：按标签分层切出 dev 集（最终模型早停用）
 """
 
 import csv
@@ -150,3 +151,42 @@ def build_fold_datasets(
     val_dataset = RumorDataset(val_texts, val_labels, tokenizer, max_length)
 
     return train_dataset, val_dataset
+
+
+def stratified_split(
+    texts: List[str],
+    labels: List[int],
+    dev_ratio: float = 0.1,
+    seed: int = SEED,
+) -> Tuple[List[str], List[int], List[str], List[int]]:
+    """按标签分层，从训练数据中切出 dev（验证）集。
+
+    用于最终模型训练时的早停 / 选最佳 epoch。分层（stratify）保证 train/dev
+    的谣言比例一致，避免少数类在 dev 集中缺席。
+
+    注意：dev 集来自 train.csv，与 val.csv（测试集）无关，避免在测试集上
+    调参导致信息泄漏。
+
+    Args:
+        texts: 全部文本。
+        labels: 全部标签 (0/1)。
+        dev_ratio: dev 集占比。
+        seed: 随机种子（保证划分可复现）。
+
+    Returns:
+        (train_texts, train_labels, dev_texts, dev_labels)
+    """
+    from sklearn.model_selection import train_test_split
+
+    indices = list(range(len(texts)))
+    train_idx, dev_idx = train_test_split(
+        indices,
+        test_size=dev_ratio,
+        stratify=labels,
+        random_state=seed,
+    )
+    train_texts = [texts[i] for i in train_idx]
+    train_labels = [labels[i] for i in train_idx]
+    dev_texts = [texts[i] for i in dev_idx]
+    dev_labels = [labels[i] for i in dev_idx]
+    return train_texts, train_labels, dev_texts, dev_labels
