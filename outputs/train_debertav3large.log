@@ -1,0 +1,25 @@
+/data/home/xietaiyi/miniconda3/lib/python3.13/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+/data/home/xietaiyi/miniconda3/lib/python3.13/site-packages/transformers/convert_slow_tokenizer.py:564: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
+  warnings.warn(
+============================================================
+最终模型训练模式
+============================================================
+设备: cuda
+类别加权: True | 梯度裁剪: 1.0
+输出名: final_debertav3large
+模式: 分层划分 (dev_ratio=0.1) | 训练 2556 / dev 284
+选择指标: macro_f1 | 早停 patience: 2
+  类别加权损失 weight=[0.887, 1.145]
+  Epoch 1/5 | loss=0.5767 | dev_acc=0.8521 | dev_f1=0.8250 | dev_macro_f1=0.8485 | 耗时=31.9s
+    ↑ macro_f1 提升至 0.8485，已保存最佳模型
+  Epoch 2/5 | loss=0.3333 | dev_acc=0.8345 | dev_f1=0.8082 | dev_macro_f1=0.8313 | 耗时=31.6s
+  Epoch 3/5 | loss=0.2080 | dev_acc=0.8556 | dev_f1=0.8255 | dev_macro_f1=0.8512 | 耗时=31.8s
+    ↑ macro_f1 提升至 0.8512，已保存最佳模型
+  Epoch 4/5 | loss=0.1079 | dev_acc=0.8486 | dev_f1=0.8230 | dev_macro_f1=0.8454 | 耗时=31.8s
+  Epoch 5/5 | loss=0.0509 | dev_acc=0.8627 | dev_f1=0.8382 | dev_macro_f1=0.8595 | 耗时=31.9s
+    ↑ macro_f1 提升至 0.8595，已保存最佳模型
+
+最终模型 = 最佳 epoch 5（dev macro_f1=0.8595）
+  dev 指标: acc=0.8627, f1=0.8382, macro_f1=0.8595, balanced_acc=0.8573
+  已保存至: /data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_debertav3large.pt

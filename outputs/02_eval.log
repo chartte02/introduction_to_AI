@@ -1,0 +1,13 @@
+/data/home/xietaiyi/miniconda3/lib/python3.13/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+设备: cuda
+
+========================================
+评估结果 — /data/home/xietaiyi/804proj/introduction_to_AI/data/val.csv
+  样本数:        401
+  准确率:        0.8803
+  平衡准确率:    0.8777
+  macro_f1:      0.8782
+  [谣言]   P/R/F1: 0.8671 / 0.8571 / 0.8621
+  [非谣言] P/R/F1: 0.8904 / 0.8982 / 0.8943
+  混淆矩阵: TP=150, TN=203, FP=23, FN=25

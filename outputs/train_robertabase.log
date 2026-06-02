@@ -1,0 +1,59 @@
+python scripts/train.py --model roberta-base --output_name final_robertabase --epochs 10 --patience 2
+============================================================
+最终模型训练模式
+============================================================
+设备: cuda
+类别加权: True | 梯度裁剪: 1.0
+输出名: final_robertabase
+模式: 分层划分 (dev_ratio=0.1) | 训练 2556 / dev 284
+选择指标: macro_f1 | 早停 patience: 2
+  类别加权损失 weight=[0.887, 1.145]
+Loading weights: 100%|███████████████████████████████████████████████████████████████| 197/197 [00:00<00:00, 6410.62it/s]
+RobertaModel LOAD REPORT from: roberta-base
+Key                             | Status     | 
+--------------------------------+------------+-
+lm_head.bias                    | UNEXPECTED | 
+roberta.embeddings.position_ids | UNEXPECTED | 
+lm_head.dense.weight            | UNEXPECTED | 
+lm_head.layer_norm.weight       | UNEXPECTED | 
+lm_head.dense.bias              | UNEXPECTED | 
+lm_head.layer_norm.bias         | UNEXPECTED | 
+pooler.dense.weight             | MISSING    | 
+pooler.dense.bias               | MISSING    | 
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:      those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+  Epoch 1/10 | loss=0.6659 | dev_acc=0.8239 | dev_f1=0.7951 | dev_macro_f1=0.8204 | 耗时=9.2s
+    ↑ macro_f1 提升至 0.8204，已保存最佳模型
+  Epoch 2/10 | loss=0.4176 | dev_acc=0.8345 | dev_f1=0.7948 | dev_macro_f1=0.8281 | 耗时=8.6s
+    ↑ macro_f1 提升至 0.8281，已保存最佳模型
+  Epoch 3/10 | loss=0.3074 | dev_acc=0.8415 | dev_f1=0.8315 | dev_macro_f1=0.8410 | 耗时=10.0s
+    ↑ macro_f1 提升至 0.8410，已保存最佳模型
+  Epoch 4/10 | loss=0.2130 | dev_acc=0.8451 | dev_f1=0.8370 | dev_macro_f1=0.8447 | 耗时=9.1s
+    ↑ macro_f1 提升至 0.8447，已保存最佳模型
+  Epoch 5/10 | loss=0.1617 | dev_acc=0.8627 | dev_f1=0.8312 | dev_macro_f1=0.8577 | 耗时=8.6s
+    ↑ macro_f1 提升至 0.8577，已保存最佳模型
+  Epoch 6/10 | loss=0.1204 | dev_acc=0.8486 | dev_f1=0.8201 | dev_macro_f1=0.8447 | 耗时=9.0s
+  Epoch 7/10 | loss=0.0825 | dev_acc=0.8310 | dev_f1=0.8049 | dev_macro_f1=0.8279 | 耗时=8.7s
+    ⏹ 连续 2 轮无提升，早停于 epoch 7
+
+最终模型 = 最佳 epoch 5（dev macro_f1=0.8577）
+  dev 指标: acc=0.8627, f1=0.8312, macro_f1=0.8577, balanced_acc=0.8527
+  已保存至: /data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_robertabase.pt
+Loading weights: 100%|███████████████████████████████████████████████████████████████| 197/197 [00:00<00:00, 5123.66it/s]
+RobertaModel LOAD REPORT from: roberta-base
+Key                             | Status     | 
+--------------------------------+------------+-
+lm_head.bias                    | UNEXPECTED | 
+roberta.embeddings.position_ids | UNEXPECTED | 
+lm_head.dense.weight            | UNEXPECTED | 
+lm_head.layer_norm.weight       | UNEXPECTED | 
+lm_head.dense.bias              | UNEXPECTED | 
+lm_head.layer_norm.bias         | UNEXPECTED | 
+pooler.dense.weight             | MISSING    | 
+pooler.dense.bias               | MISSING    | 
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:      those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.

@@ -1,0 +1,25 @@
+/data/home/xietaiyi/miniconda3/lib/python3.13/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+emoji is not installed, thus not converting emoticons or emojis into text. Install emoji: pip3 install emoji==0.6.0
+============================================================
+最终模型训练模式
+============================================================
+设备: cuda
+类别加权: True | 梯度裁剪: 1.0
+输出名: final_bertweetbase
+模式: 分层划分 (dev_ratio=0.1) | 训练 2556 / dev 284
+选择指标: macro_f1 | 早停 patience: 2
+  类别加权损失 weight=[0.887, 1.145]
+  Epoch 1/5 | loss=0.5417 | dev_acc=0.8169 | dev_f1=0.8143 | dev_macro_f1=0.8169 | 耗时=9.9s
+    ↑ macro_f1 提升至 0.8169，已保存最佳模型
+  Epoch 2/5 | loss=0.3512 | dev_acc=0.8415 | dev_f1=0.8235 | dev_macro_f1=0.8399 | 耗时=10.5s
+    ↑ macro_f1 提升至 0.8399，已保存最佳模型
+  Epoch 3/5 | loss=0.2458 | dev_acc=0.8521 | dev_f1=0.8293 | dev_macro_f1=0.8494 | 耗时=10.3s
+    ↑ macro_f1 提升至 0.8494，已保存最佳模型
+  Epoch 4/5 | loss=0.1647 | dev_acc=0.8592 | dev_f1=0.8333 | dev_macro_f1=0.8557 | 耗时=9.6s
+    ↑ macro_f1 提升至 0.8557，已保存最佳模型
+  Epoch 5/5 | loss=0.1099 | dev_acc=0.8345 | dev_f1=0.8157 | dev_macro_f1=0.8328 | 耗时=9.0s
+
+最终模型 = 最佳 epoch 4（dev macro_f1=0.8557）
+  dev 指标: acc=0.8592, f1=0.8333, macro_f1=0.8557, balanced_acc=0.8532
+  已保存至: /data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_bertweetbase.pt

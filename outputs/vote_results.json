@@ -1,0 +1,90 @@
+{
+  "variant": "vote-8 (probs 平均)",
+  "threshold": 0.46,
+  "n_samples": 401,
+  "models": [
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_model.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_1_best.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_2_best.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_3_best.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_4_best.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_5_best.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_6_best.pt",
+    "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_7_best.pt"
+  ],
+  "per_model_at_threshold": [
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_model.pt",
+      "accuracy": 0.8802992518703242,
+      "macro_f1": 0.8781710466352727,
+      "f1": 0.8620689655172413
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_1_best.pt",
+      "accuracy": 0.8678304239401496,
+      "macro_f1": 0.8663644309185912,
+      "f1": 0.8523676880222841
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_2_best.pt",
+      "accuracy": 0.8379052369077307,
+      "macro_f1": 0.8344417131932137,
+      "f1": 0.8104956268221574
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_3_best.pt",
+      "accuracy": 0.8628428927680798,
+      "macro_f1": 0.8616000552219231,
+      "f1": 0.8484848484848485
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_4_best.pt",
+      "accuracy": 0.8478802992518704,
+      "macro_f1": 0.8430991462530709,
+      "f1": 0.8157099697885197
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_5_best.pt",
+      "accuracy": 0.7855361596009975,
+      "macro_f1": 0.7832704876822524,
+      "f1": 0.7611111111111111
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_6_best.pt",
+      "accuracy": 0.7481296758104738,
+      "macro_f1": 0.7479729435411104,
+      "f1": 0.7416879795396419
+    },
+    {
+      "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/fold_7_best.pt",
+      "accuracy": 0.8354114713216958,
+      "macro_f1": 0.8306847842775986,
+      "f1": 0.8023952095808382
+    }
+  ],
+  "vote_metrics": {
+    "accuracy": 0.8678304239401496,
+    "precision": 0.8315217391304348,
+    "recall": 0.8742857142857143,
+    "f1": 0.8523676880222841,
+    "precision_neg": 0.8986175115207373,
+    "recall_neg": 0.8628318584070797,
+    "f1_neg": 0.8803611738148983,
+    "macro_f1": 0.8663644309185912,
+    "balanced_accuracy": 0.868558786346397,
+    "tp": 153,
+    "tn": 195,
+    "fp": 31,
+    "fn": 22
+  },
+  "baseline_single_final_model": {
+    "model_path": "/data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_model.pt",
+    "accuracy": 0.8802992518703242,
+    "macro_f1": 0.8781710466352727,
+    "f1": 0.8620689655172413
+  },
+  "delta_vs_baseline": {
+    "accuracy": -0.012468827930174564,
+    "macro_f1": -0.011806615716681512
+  }
+}
