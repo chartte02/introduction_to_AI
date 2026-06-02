@@ -2,14 +2,14 @@
 """训练入口脚本。
 
 用法：
-    # 留一事件交叉验证（评估泛化能力）
-    python ai_scripts/train.py --cv
+    # 运行留一事件交叉验证
+    python scripts/train.py --cv
 
-    # 训练最终模型（默认：分层 dev 集 + 早停 + 保存最佳 epoch）
-    python ai_scripts/train.py
+    # 在全部训练集上训练最终模型
+    python scripts/train.py
 
     # 指定模型和其他超参
-    python ai_scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5
+    python scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5
 """
 
 import argparse
@@ -19,7 +19,7 @@ from pathlib import Path
 # 确保项目根目录在 sys.path 上（支持直接运行 python ai_scripts/train.py）
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from ai_model.trainer import run_cross_validation, train_final_model
+from model.trainer import run_cross_validation, train_final_model
 
 
 def main():

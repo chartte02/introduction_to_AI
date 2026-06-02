@@ -38,7 +38,7 @@ htmlcov/
 logs/
 
 # ML artifacts / outputs
-ai_outputs/
+outputs/
 artifacts/
 checkpoints/
 models/

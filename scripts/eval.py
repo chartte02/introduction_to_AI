@@ -3,10 +3,10 @@
 
 用法：
     # 在 val.csv 上评估最终模型
-    python ai_scripts/eval.py
+    python scripts/eval.py
 
     # 评估指定模型和数据集
-    python ai_scripts/eval.py --model ai_outputs/final_model.pt --data data/val.csv
+    python scripts/eval.py --model outputs/final_model.pt --data data/val.csv
 """
 
 import argparse
@@ -32,10 +32,10 @@ import torch
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
-from ai_model.preprocessing import clean_text
-from ai_model.model import RumorClassifier
-from ai_model.data import RumorDataset
-from ai_model.trainer import evaluate
+from model.preprocessing import clean_text
+from model.model import RumorClassifier
+from model.data import RumorDataset
+from model.trainer import evaluate
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -45,7 +45,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default=str(PROJECT_ROOT / "ai_outputs" / "final_model.pt"),
+        default=str(PROJECT_ROOT / "outputs" / "final_model.pt"),
         help="模型文件路径",
     )
     parser.add_argument(

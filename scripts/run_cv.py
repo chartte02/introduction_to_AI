@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """轻量级CV训练入口 - 直接运行 7 折交叉验证。
 
-输出同时写入 ai_outputs/cv_training.log，方便监控进度。
-运行方式：python ai_scripts/run_cv.py
+输出同时写入 outputs/cv_training.log，方便监控进度。
+运行方式：python scripts/run_cv.py
 """
 
 import io
@@ -19,7 +19,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # ── 日志文件 ──
-OUTPUTS_DIR = PROJECT_ROOT / "ai_outputs"
+OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 LOG_FILE = OUTPUTS_DIR / "cv_training.log"
 
@@ -39,7 +39,7 @@ class _Tee:
         _log_file.flush()
 
 
-from ai_model.trainer import run_cross_validation
+from model.trainer import run_cross_validation
 
 # 在所有 import 完成后再切替换 stdout（避免与 trainer.py 的包装冲突）
 sys.stdout = _Tee()

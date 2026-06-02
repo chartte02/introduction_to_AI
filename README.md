@@ -23,17 +23,17 @@
 │  ├─ guidance.md             # 课程任务说明
 │  ├─ template.md             # 大作业报告模板
 │  └─ division.md             # 小组分工
-├─ ai_model/                  # 核心模型代码
+├─ model/                  # 核心模型代码
 │  ├─ preprocessing.py        # 文本预处理 pipeline（5 步清洗）
 │  ├─ data.py                 # 数据加载 + 留一事件交叉验证划分
 │  ├─ model.py                # BERT 分类器（twitter-roberta-base + 分类头）
 │  └─ trainer.py              # 训练、评估、交叉验证、最终模型训练
-├─ ai_scripts/                # 运行入口
+├─ scripts/                # 运行入口
 │  ├─ train.py                # 训练入口（支持 --cv 交叉验证 / 全量训练）
 │  ├─ eval.py                 # 评估入口（在 val.csv 上报告指标）
 │  ├─ predict.py              # 单条推理入口（交互式 / 命令行）
 │  └─ run_cv.py               # 便捷 CV 训练脚本（含日志输出）
-├─ ai_outputs/                # 模型权重与评估产物（.gitignore 忽略）
+├─ outputs/                # 模型权重与评估产物（.gitignore 忽略）
 ├─ .venv/                     # Python 虚拟环境（.gitignore 忽略）
 ├─ requirements.txt
 ├─ AGENTS.md                  # AI 编码代理工作指引
@@ -72,33 +72,33 @@ export no_proxy="*"
 
 ```bash
 # 留一事件交叉验证（7 折，评估泛化能力）
-python ai_scripts/train.py --cv
+python scripts/train.py --cv
 
 # 在全部训练集上训练最终模型
-python ai_scripts/train.py
+python scripts/train.py
 
 # 指定超参
-python ai_scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5 --cv
+python scripts/train.py --model bert-base-uncased --epochs 8 --lr 3e-5 --cv
 ```
 
 ### 评估
 
 ```bash
 # 在 val.csv 上评估最终模型
-python ai_scripts/eval.py
+python scripts/eval.py
 
 # 评估指定模型
-python ai_scripts/eval.py --model ai_outputs/final_model.pt --data data/val.csv
+python scripts/eval.py --model outputs/final_model.pt --data data/val.csv
 ```
 
 ### 推理
 
 ```bash
 # 交互式推理
-python ai_scripts/predict.py
+python scripts/predict.py
 
 # 单条推理
-python ai_scripts/predict.py --text "BREAKING: Ferguson police chief says..."
+python scripts/predict.py --text "BREAKING: Ferguson police chief says..."
 ```
 
 ## 技术方案
