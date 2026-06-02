@@ -1,0 +1,36 @@
+python scripts/train.py  --epochs 10 --patience 2
+============================================================
+最终模型训练模式
+============================================================
+设备: cuda
+类别加权: True | 梯度裁剪: 1.0
+输出名: final_model
+模式: 分层划分 (dev_ratio=0.1) | 训练 2556 / dev 284
+选择指标: macro_f1 | 早停 patience: 2
+  类别加权损失 weight=[0.856, 1.203]
+Loading weights: 100%|██████████████████████████████████████████████████████████████| 199/199 [00:00<00:00, 26388.44it/s]
+RobertaModel LOAD REPORT from: cardiffnlp/twitter-roberta-base
+Key                       | Status     |  | 
+--------------------------+------------+--+-
+lm_head.bias              | UNEXPECTED |  | 
+lm_head.decoder.bias      | UNEXPECTED |  | 
+lm_head.decoder.weight    | UNEXPECTED |  | 
+lm_head.dense.bias        | UNEXPECTED |  | 
+lm_head.layer_norm.weight | UNEXPECTED |  | 
+lm_head.layer_norm.bias   | UNEXPECTED |  | 
+lm_head.dense.weight      | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+  Epoch 1/10 | loss=0.5937 | dev_acc=0.8638 | dev_f1=0.8392 | dev_macro_f1=0.8605 | 耗时=9.4s
+    ↑ macro_f1 提升至 0.8605，已保存最佳模型
+  Epoch 2/10 | loss=0.3565 | dev_acc=0.8538 | dev_f1=0.8462 | dev_macro_f1=0.8535 | 耗时=9.2s
+  Epoch 3/10 | loss=0.2177 | dev_acc=0.8937 | dev_f1=0.8730 | dev_macro_f1=0.8908 | 耗时=9.7s
+    ↑ macro_f1 提升至 0.8908，已保存最佳模型
+  Epoch 4/10 | loss=0.1292 | dev_acc=0.8904 | dev_f1=0.8664 | dev_macro_f1=0.8867 | 耗时=9.4s
+  Epoch 5/10 | loss=0.0790 | dev_acc=0.8904 | dev_f1=0.8726 | dev_macro_f1=0.8882 | 耗时=9.1s
+    ⏹ 连续 2 轮无提升，早停于 epoch 5
+
+最终模型 = 最佳 epoch 3（dev macro_f1=0.8908）
+  dev 指标: acc=0.8937, f1=0.8730, macro_f1=0.8908, balanced_acc=0.8917
+  已保存至: /data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_model.pt
