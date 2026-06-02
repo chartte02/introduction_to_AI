@@ -1,15 +1,9 @@
 """训练模块。
-
 提供：
   - train_epoch()：单轮训练（支持类别加权损失 + 梯度裁剪）
   - evaluate()：验证集评估（含 macro_f1 / balanced_accuracy）
   - run_cross_validation()：留一事件交叉验证主循环（按最佳 epoch 汇总）
   - train_final_model()：带验证集 + 早停 + 保存最佳 epoch 的最终模型训练
-
-网络说明：
-  HuggingFace 在国内可能无法直连，支持通过环境变量配置镜像：
-    export HF_ENDPOINT=https://hf-mirror.com
-    export no_proxy="*"
 """
 
 import json
@@ -20,12 +14,11 @@ import time
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-# Windows 控制台 UTF-8 输出（仅当 stdout 未被上游替换时）
+# Windows 控制台 UTF-8 输出
 if sys.platform == "win32" and hasattr(sys.stdout, "buffer"):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
-# 自动配置 HuggingFace 镜像（国内环境）
 if "HF_ENDPOINT" not in os.environ:
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 os.environ.setdefault("no_proxy", "*")
@@ -48,9 +41,66 @@ from model.model import RumorClassifier
 # 路径常量
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+THRESHOLD_PATH = OUTPUTS_DIR / "threshold.json"
 
 # 固定随机种子
 torch.manual_seed(SEED)
+
+
+def load_threshold(default: float = 0.5) -> float:
+    """读取 outputs/threshold.json 中由阈值校准产出的最优 τ。
+
+    若文件不存在或字段缺失则回退到 default（0.5），保证训练阶段（threshold.json
+    尚未生成时）行为与改造前完全一致。
+    """
+    if not THRESHOLD_PATH.exists():
+        return default
+    try:
+        with open(THRESHOLD_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        tau = float(data.get("tau", default))
+        if 0.0 < tau < 1.0:
+            return tau
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return default
+
+
+def _compute_metrics(preds: List[int], labels: List[int]) -> Dict[str, float]:
+    """根据 preds 与 labels 计算混淆矩阵、F1、macro_f1、balanced_accuracy 等。
+
+    与原 evaluate() 内的指标口径完全一致，拆出后可被阈值评估复用。
+    """
+    tp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 1)
+    tn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 0)
+    fp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 0)
+    fn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 1)
+
+    accuracy = (tp + tn) / max(len(preds), 1)
+    precision = tp / max(tp + fp, 1)
+    recall = tp / max(tp + fn, 1)
+    f1 = 2 * precision * recall / max(precision + recall, 1e-8)
+    precision_neg = tn / max(tn + fn, 1)
+    recall_neg = tn / max(tn + fp, 1)
+    f1_neg = 2 * precision_neg * recall_neg / max(precision_neg + recall_neg, 1e-8)
+    macro_f1 = (f1 + f1_neg) / 2
+    balanced_accuracy = (recall + recall_neg) / 2
+
+    return {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "precision_neg": precision_neg,
+        "recall_neg": recall_neg,
+        "f1_neg": f1_neg,
+        "macro_f1": macro_f1,
+        "balanced_accuracy": balanced_accuracy,
+        "tp": tp,
+        "tn": tn,
+        "fp": fp,
+        "fn": fn,
+    }
 
 # 默认超参
 DEFAULT_HP = {
@@ -144,10 +194,14 @@ def evaluate(
 ) -> Dict[str, float]:
     """在验证集上评估。
 
+    判定规则：P(谣言) > τ，其中 τ 由 load_threshold() 从 outputs/threshold.json 读取；
+    未做阈值校准时回退到 0.5，等价于原 argmax 行为。
+
     返回正类（谣言）与负类（非谣言）的 precision/recall/f1，
     以及对类别不平衡更稳健的 macro_f1 与 balanced_accuracy。
     """
     model.eval()
+    threshold = load_threshold()
     all_preds, all_labels = [], []
 
     with torch.no_grad():
@@ -157,48 +211,13 @@ def evaluate(
             labels = batch["label"].to(device)
 
             logits = model(input_ids, attention_mask)
-            preds = torch.argmax(logits, dim=1)
+            probs = torch.softmax(logits, dim=1)
+            preds = (probs[:, 1] > threshold).long()
 
             all_preds.extend(preds.cpu().tolist())
             all_labels.extend(labels.cpu().tolist())
 
-    # 混淆矩阵（正类 = 谣言 = 1）
-    tp = sum(1 for p, l in zip(all_preds, all_labels) if p == 1 and l == 1)
-    tn = sum(1 for p, l in zip(all_preds, all_labels) if p == 0 and l == 0)
-    fp = sum(1 for p, l in zip(all_preds, all_labels) if p == 1 and l == 0)
-    fn = sum(1 for p, l in zip(all_preds, all_labels) if p == 0 and l == 1)
-
-    accuracy = (tp + tn) / max(len(all_preds), 1)
-
-    # 正类（谣言）指标
-    precision = tp / max(tp + fp, 1)
-    recall = tp / max(tp + fn, 1)
-    f1 = 2 * precision * recall / max(precision + recall, 1e-8)
-
-    # 负类（非谣言）指标
-    precision_neg = tn / max(tn + fn, 1)
-    recall_neg = tn / max(tn + fp, 1)
-    f1_neg = 2 * precision_neg * recall_neg / max(precision_neg + recall_neg, 1e-8)
-
-    # 宏平均 / 平衡准确率（对类别不平衡更稳健）
-    macro_f1 = (f1 + f1_neg) / 2
-    balanced_accuracy = (recall + recall_neg) / 2
-
-    return {
-        "accuracy": accuracy,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-        "precision_neg": precision_neg,
-        "recall_neg": recall_neg,
-        "f1_neg": f1_neg,
-        "macro_f1": macro_f1,
-        "balanced_accuracy": balanced_accuracy,
-        "tp": tp,
-        "tn": tn,
-        "fp": fp,
-        "fn": fn,
-    }
+    return _compute_metrics(all_preds, all_labels)
 
 
 def run_cross_validation(
@@ -377,6 +396,7 @@ def train_final_model(
     select_metric: str = DEFAULT_HP["select_metric"],
     dev_ratio: float = DEFAULT_HP["dev_ratio"],
     patience: int = DEFAULT_HP["patience"],
+    output_name: str = "final_model",
     device: str = None,
 ) -> RumorClassifier:
     """训练最终模型。
@@ -384,7 +404,12 @@ def train_final_model(
     dev_ratio > 0（默认）：从 train.csv 分层切出 dev 集，每轮在 dev 上评估，
     按 select_metric 保存最佳 epoch 作为最终模型，并在连续 patience 轮无提升时早停。
 
-    dev_ratio <= 0：在全部训练数据上训练固定轮数，保存最后一轮（旧行为）。
+    dev_ratio <= 0：在全部训练数据上训练固定轮数，保存最后一轮。
+
+    output_name：权重与 tokenizer 的输出名前缀，避免并行训练不同 backbone 时互相覆盖。
+        权重写入 outputs/{output_name}.pt，tokenizer 写入 outputs/tokenizer_{output_name}/。
+        当 output_name 默认为 "final_model" 时，tokenizer 仍写入旧路径 outputs/tokenizer/
+        以保证向后兼容。
 
     Returns:
         训练好的 RumorClassifier 实例（dev 模式下为最佳 epoch 的权重）。
@@ -394,12 +419,18 @@ def train_final_model(
 
     print(f"设备: {device}")
     print(f"类别加权: {use_class_weights} | 梯度裁剪: {max_grad_norm}")
+    print(f"输出名: {output_name}")
 
     texts, labels, _events = load_data()
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    final_path = str(OUTPUTS_DIR / "final_model.pt")
+    final_path = str(OUTPUTS_DIR / f"{output_name}.pt")
+    tokenizer_dir = (
+        OUTPUTS_DIR / "tokenizer"
+        if output_name == "final_model"
+        else OUTPUTS_DIR / f"tokenizer_{output_name}"
+    )
 
     # ── 无 dev 集：全量训练，保存最后一轮 ──
     if dev_ratio is None or dev_ratio <= 0:
@@ -426,7 +457,7 @@ def train_final_model(
             print(f"  Epoch {epoch+1}/{num_epochs} | loss={loss:.4f} | 耗时={time.time()-start:.1f}s")
 
         model.save(final_path)
-        tokenizer.save_pretrained(str(OUTPUTS_DIR / "tokenizer"))
+        tokenizer.save_pretrained(str(tokenizer_dir))
         print(f"最终模型已保存至: {final_path}")
         return model
 
@@ -486,7 +517,7 @@ def train_final_model(
                 print(f"    ⏹ 连续 {patience} 轮无提升，早停于 epoch {epoch+1}")
                 break
 
-    tokenizer.save_pretrained(str(OUTPUTS_DIR / "tokenizer"))
+    tokenizer.save_pretrained(str(tokenizer_dir))
 
     print(f"\n最终模型 = 最佳 epoch {best_epoch}（dev {select_metric}={best_score:.4f}）")
     print(
