@@ -1,12 +1,10 @@
 """文本预处理模块。
-
-按照 AGENTS.md §8 的定义实现预处理 pipeline：
+实现预处理 pipeline:
   原始推文 → HTML解码 → URL替换 → @mention替换 → #去除 → 空白合并 → BERT Tokenizer
 """
 
 import re
 import html
-
 
 # URL 匹配模式：http:// 或 https:// 开头的非空白字符序列
 URL_PATTERN = re.compile(r"https?://\S+")
@@ -14,9 +12,8 @@ URL_PATTERN = re.compile(r"https?://\S+")
 # @mention 匹配模式：@ 后跟非空白字符
 MENTION_PATTERN = re.compile(r"@\w+")
 
-
 def clean_text(text: str) -> str:
-    """对单条推文执行完整预处理（不含 tokenization）。
+    """对单条推文执行完整预处理(不含tokenization)。
 
     Args:
         text: 原始推文文本。
