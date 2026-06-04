@@ -1,0 +1,12 @@
+/data/home/xietaiyi/miniconda3/lib/python3.13/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+设备: cuda
+模型: cardiffnlp/twitter-roberta-base  ←  /data/home/xietaiyi/804proj/introduction_to_AI/outputs/final_model.pt
+dev 集大小: 284（谣言 124 / 非谣言 160）
+
+============================================================
+  dev @ τ=0.5    :  acc=0.8697  macro_f1=0.8675
+  dev @ τ=0.46 (best acc)     :  acc=0.8732  macro_f1=0.8712
+  dev @ τ=0.46 (best macro_f1):  acc=0.8732  macro_f1=0.8712
+============================================================
+  已写入 /data/home/xietaiyi/804proj/introduction_to_AI/outputs/threshold.json（生效阈值：τ=0.46，目标=accuracy）

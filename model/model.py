@@ -65,6 +65,7 @@ class RumorClassifier(nn.Module):
 
         # 分类头
         cls_vec = self.dropout(cls_vec)
+        cls_vec = cls_vec.float()
         logits = self.classifier(cls_vec)  # (batch, 2)
 
         if return_attentions:
@@ -74,11 +75,6 @@ class RumorClassifier(nn.Module):
         return logits
 
     def save(self, path: str) -> None:
-        """保存模型权重和配置。
-
-        Args:
-            path: 保存路径（不含扩展名，会自动加 .pt）。
-        """
         torch.save(
             {
                 "model_name": self.model_name,

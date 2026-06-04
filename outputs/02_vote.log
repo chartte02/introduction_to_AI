@@ -1,0 +1,34 @@
+样本数: 401
+
+  >> 推理 final_model.pt ...
+     单模型 @ τ=0.46: acc=0.8803  macro_f1=0.8782
+
+  >> 推理 fold_1_best.pt ...
+     单模型 @ τ=0.46: acc=0.8678  macro_f1=0.8664
+
+  >> 推理 fold_2_best.pt ...
+     单模型 @ τ=0.46: acc=0.8379  macro_f1=0.8344
+
+  >> 推理 fold_3_best.pt ...
+     单模型 @ τ=0.46: acc=0.8628  macro_f1=0.8616
+
+  >> 推理 fold_4_best.pt ...
+     单模型 @ τ=0.46: acc=0.8479  macro_f1=0.8431
+
+  >> 推理 fold_5_best.pt ...
+     单模型 @ τ=0.46: acc=0.7855  macro_f1=0.7833
+
+  >> 推理 fold_6_best.pt ...
+     单模型 @ τ=0.46: acc=0.7481  macro_f1=0.7480
+
+  >> 推理 fold_7_best.pt ...
+     单模型 @ τ=0.46: acc=0.8354  macro_f1=0.8307
+
+  baseline (single final_model @ τ=0.46):
+     acc=0.8803   macro_f1=0.8782
+  vote-8 (probs 平均 @ τ=0.46):
+     acc=0.8678   macro_f1=0.8664
+     Δ acc      = -0.0125
+     Δ macro_f1 = -0.0118
+  混淆矩阵 (vote): TP=153, TN=195, FP=31, FN=22
+

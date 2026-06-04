@@ -47,17 +47,17 @@ sys.stdout = _Tee()
 print("Starting 7-fold CV training...")
 print(f"Log file: {LOG_FILE}")
 print(f"Model: cardiffnlp/twitter-roberta-base")
-print(f"Epochs: 3, Batch: 8, LR: 2e-5")
-print(f"Device: cpu")
+print(f"Epochs: 5, Batch: 16, LR: 2e-5")
+print(f"Device: auto (cuda if available, else cpu)")
 print("=" * 50)
 
 summary = run_cross_validation(
     model_name="cardiffnlp/twitter-roberta-base",
     max_length=128,
-    batch_size=8,
+    batch_size=16,
     learning_rate=2e-5,
-    num_epochs=3,
-    device="cpu",
+    num_epochs=5,
+    device=None,  # 自动选择 cuda/cpu
 )
 
 print("\nCV training completed!")

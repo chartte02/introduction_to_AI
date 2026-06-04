@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
 """评估入口脚本。
-
 用法：
-    # 在 val.csv 上评估最终模型
-    python scripts/eval.py
-
     # 评估指定模型和数据集
     python scripts/eval.py --model outputs/final_model.pt --data data/val.csv
 """
@@ -16,12 +11,13 @@ import os
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 # Windows 控制台 UTF-8 输出
 if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
-# 国内环境 HuggingFace 镜像配置（必须在 import transformers 之前）
 os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 os.environ.setdefault("no_proxy", "*")
 
@@ -89,12 +85,13 @@ def main():
 
     print(f"\n{'='*40}")
     print(f"评估结果 — {args.data}")
-    print(f"  样本数:   {len(texts)}")
-    print(f"  准确率:   {metrics['accuracy']:.4f}")
-    print(f"  精确率:   {metrics['precision']:.4f}")
-    print(f"  召回率:   {metrics['recall']:.4f}")
-    print(f"  F1:       {metrics['f1']:.4f}")
-    print(f"  TP={metrics['tp']}, TN={metrics['tn']}, "
+    print(f"  样本数:        {len(texts)}")
+    print(f"  准确率:        {metrics['accuracy']:.4f}")
+    print(f"  平衡准确率:    {metrics['balanced_accuracy']:.4f}")
+    print(f"  macro_f1:      {metrics['macro_f1']:.4f}")
+    print(f"  [谣言]   P/R/F1: {metrics['precision']:.4f} / {metrics['recall']:.4f} / {metrics['f1']:.4f}")
+    print(f"  [非谣言] P/R/F1: {metrics['precision_neg']:.4f} / {metrics['recall_neg']:.4f} / {metrics['f1_neg']:.4f}")
+    print(f"  混淆矩阵: TP={metrics['tp']}, TN={metrics['tn']}, "
           f"FP={metrics['fp']}, FN={metrics['fn']}")
 
 

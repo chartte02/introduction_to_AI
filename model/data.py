@@ -3,6 +3,7 @@
 提供：
   - load_data()：从 CSV 加载并清洗文本
   - get_event_folds()：按事件分组，生成留一事件交叉验证的 train/val 划分
+  - stratified_split()：按标签分层切出 dev 集（用于最终模型早停）
 """
 
 import csv
@@ -12,10 +13,8 @@ from typing import Tuple, List, Dict
 import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
-
 from model.preprocessing import clean_text
 
-# 项目根目录（相对于本文件位置：model/data.py → 项目根）
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 
@@ -25,13 +24,11 @@ ALL_EVENTS = ["0", "1", "2", "3", "4", "5", "6"]
 # 固定随机种子
 SEED = 42
 
-
 class RumorDataset(Dataset):
     """谣言检测数据集。
 
-    每个样本返回 (input_ids, attention_mask, label)。
+    每个样本返回 (input_ids, attention_mask, label)
     """
-
     def __init__(
         self,
         texts: List[str],
@@ -63,10 +60,9 @@ class RumorDataset(Dataset):
 
 
 def load_data(csv_path: Path = None) -> Tuple[List[str], List[int], List[str]]:
-    """从 CSV 加载数据。
-
+    """
     Args:
-        csv_path: CSV 文件路径，默认为 data/train.csv。
+        csv_path: CSV 文件路径，默认值=data/train.csv
 
     Returns:
         (texts, labels, events) 三元组。
@@ -125,12 +121,10 @@ def build_fold_datasets(
     """根据 fold 配置构建训练集和验证集。
 
     Args:
-        texts: 全部文本。
-        labels: 全部标签。
-        events: 全部事件 ID。
-        fold: get_event_folds() 返回的单个 fold 配置。
-        tokenizer: HuggingFace tokenizer。
-        max_length: token 最大长度。
+        texts: 全部文本
+        labels: 全部标签
+        events: 全部事件 ID
+        fold: get_event_folds() 返回的单个 fold 配置
 
     Returns:
         (train_dataset, val_dataset)
@@ -150,3 +144,42 @@ def build_fold_datasets(
     val_dataset = RumorDataset(val_texts, val_labels, tokenizer, max_length)
 
     return train_dataset, val_dataset
+
+
+def stratified_split(
+    texts: List[str],
+    labels: List[int],
+    dev_ratio: float = 0.1,
+    seed: int = SEED,
+) -> Tuple[List[str], List[int], List[str], List[int]]:
+    """按标签分层，从训练数据中切出验证集。
+
+    用于最终模型训练时的早停 / 选最佳 epoch。分层（stratify）保证 train/dev
+    的谣言比例一致，避免少数类在验证集中缺失。
+
+    dev 集来自 train.csv，与 val.csv（测试集）无关，避免在测试集上
+    调参导致信息泄漏。
+
+    Args:
+        texts: 全部文本
+        labels: 全部标签 (0/1)
+        dev_ratio: dev 集占比
+        seed: 随机种子（保证可复现）
+
+    Returns:
+        (train_texts, train_labels, dev_texts, dev_labels)
+    """
+    from sklearn.model_selection import train_test_split
+
+    indices = list(range(len(texts)))
+    train_idx, dev_idx = train_test_split(
+        indices,
+        test_size=dev_ratio,
+        stratify=labels,
+        random_state=seed,
+    )
+    train_texts = [texts[i] for i in train_idx]
+    train_labels = [labels[i] for i in train_idx]
+    dev_texts = [texts[i] for i in dev_idx]
+    dev_labels = [labels[i] for i in dev_idx]
+    return train_texts, train_labels, dev_texts, dev_labels

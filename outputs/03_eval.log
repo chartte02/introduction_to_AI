@@ -1,0 +1,24 @@
+python scripts/eval.py
+设备: cuda
+Loading weights: 100%|██████████████████████████████████████████████████████████████| 199/199 [00:00<00:00, 27950.79it/s]
+RobertaModel LOAD REPORT from: cardiffnlp/twitter-roberta-base
+Key                       | Status     |  | 
+--------------------------+------------+--+-
+lm_head.bias              | UNEXPECTED |  | 
+lm_head.layer_norm.bias   | UNEXPECTED |  | 
+lm_head.decoder.bias      | UNEXPECTED |  | 
+lm_head.layer_norm.weight | UNEXPECTED |  | 
+lm_head.dense.bias        | UNEXPECTED |  | 
+lm_head.decoder.weight    | UNEXPECTED |  | 
+lm_head.dense.weight      | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+  样本数:        401
+  准确率:        0.8878
+  平衡准确率:    0.8766
+  macro_f1:      0.8831
+  [谣言]   P/R/F1: 0.9452 / 0.7886 / 0.8598
+  [非谣言] P/R/F1: 0.8549 / 0.9646 / 0.9064
+  混淆矩阵: TP=138, TN=218, FP=8, FN=37
