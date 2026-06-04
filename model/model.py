@@ -39,18 +39,26 @@ class RumorClassifier(nn.Module):
         self,
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
+        return_attentions: bool = False,
     ) -> torch.Tensor:
         """前向传播。
 
         Args:
             input_ids: token ID 张量，形状 (batch, seq_len)。
             attention_mask: 注意力掩码，形状 (batch, seq_len)。
+            return_attentions: 是否同时返回注意力权重。
 
         Returns:
-            logits 张量，形状 (batch, 2)。
+            如果 return_attentions=False，返回 logits 张量，形状 (batch, 2)。
+            如果 return_attentions=True，返回 (logits, attentions)，
+            其中 attentions 是各层注意力权重的元组。
         """
-        # encoder 输出
-        outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+        # encoder 输出（需要时开启 attention 输出）
+        outputs = self.encoder(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_attentions=return_attentions,
+        )
 
         # 取 [CLS] 向量（序列第一个 token）
         cls_vec = outputs.last_hidden_state[:, 0, :]  # (batch, hidden_size)
@@ -58,6 +66,10 @@ class RumorClassifier(nn.Module):
         # 分类头
         cls_vec = self.dropout(cls_vec)
         logits = self.classifier(cls_vec)  # (batch, 2)
+
+        if return_attentions:
+            # attentions: 元组，每层一个 (batch, num_heads, seq_len, seq_len)
+            return logits, outputs.attentions
 
         return logits
 
