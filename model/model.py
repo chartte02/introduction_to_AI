@@ -29,7 +29,10 @@ class RumorClassifier(nn.Module):
     ):
         super().__init__()
         self.model_name = model_name
-        self.encoder = AutoModel.from_pretrained(model_name)
+        # 使用 eager attention（支持 output_attentions=True）
+        self.encoder = AutoModel.from_pretrained(
+            model_name, attn_implementation="eager"
+        )
         hidden_size = self.encoder.config.hidden_size  # 通常为 768
 
         self.dropout = nn.Dropout(dropout)

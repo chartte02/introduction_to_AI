@@ -163,12 +163,17 @@ def train_epoch(
     device: str,
     criterion: nn.Module,
     max_grad_norm: float = 1.0,
+    show_progress: bool = True,
 ) -> float:
     """训练一个 epoch，返回平均 loss。"""
+    from tqdm import tqdm
+
     model.train()
     total_loss = 0.0
 
-    for batch in dataloader:
+    iterator = tqdm(dataloader, desc="  Training", leave=False) if show_progress else dataloader
+
+    for batch in iterator:
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["label"].to(device)

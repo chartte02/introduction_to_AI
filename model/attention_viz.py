@@ -7,12 +7,30 @@
   - 文本高亮可视化
 """
 
+import re
 from typing import List, Tuple, Optional
 
 import torch
 import numpy as np
 
 from model.model import RumorClassifier
+
+
+# 仅标点符号的 token 模式（含 Ġ 前缀和纯标点）
+_PUNCT_PATTERN = re.compile(r"^[Ġ]?[^a-zA-Z0-9\u4e00-\u9fff]+$")
+
+
+def _is_punct(token: str) -> bool:
+    """判断一个 token 是否纯标点/符号（不含字母数字和中文）。"""
+    return bool(_PUNCT_PATTERN.match(token))
+
+
+def _is_continuation(token: str) -> bool:
+    """判断是否为 subword continuation（不以 Ġ 开头且非特殊 token 且非标点）。"""
+    clean = token.replace("##", "").replace("Ġ", "")
+    if _is_punct(clean):
+        return False
+    return not token.startswith("Ġ") and token not in ("<s>", "</s>", "<pad>", "<mask>")
 
 
 def extract_attention(
@@ -99,14 +117,14 @@ def get_top_keywords(
     top_k: int = 10,
     exclude_special: bool = True,
 ) -> List[Tuple[str, float]]:
-    """获取重要性最高的 top-k 关键词。
+    """获取重要性最高的 top-k 关键词（自动合并 subword 并过滤标点）。
 
     Args:
         tokenizer: HuggingFace tokenizer。
         input_ids: token ID 张量，形状 (1, seq_len)。
         importance_scores: 重要性分数，形状 (1, seq_len)。
         top_k: 返回前 k 个。
-        exclude_special: 是否排除 [CLS]/[SEP]/[PAD]。
+        exclude_special: 是否排除特殊 token。
 
     Returns:
         (词, 分数) 列表，按分数降序排列。
@@ -114,21 +132,53 @@ def get_top_keywords(
     scores = importance_scores[0]
     ids = input_ids[0]
 
-    token_scores = []
-    for i in range(len(ids)):
-        token_id = ids[i].item()
-        if exclude_special and token_id in [
+    # 将 token ID 转为带 subword 标记的字符串
+    tokens = tokenizer.convert_ids_to_tokens(ids.tolist())
+
+    # 合并 subword 并过滤标点
+    word_scores = []
+    buffer = ""
+    buffer_score = 0.0
+    buffer_count = 0
+
+    for i, (tid, tok, score) in enumerate(zip(ids.tolist(), tokens, scores.tolist())):
+        if exclude_special and tid in [
             tokenizer.cls_token_id,
             tokenizer.sep_token_id,
             tokenizer.pad_token_id,
         ]:
             continue
-        word = tokenizer.decode([token_id])
-        score = scores[i].item()
-        token_scores.append((word, score))
 
-    token_scores.sort(key=lambda x: x[1], reverse=True)
-    return token_scores[:top_k]
+        if _is_continuation(tok):
+            # subword continuation：拼接到前一个词
+            clean = tok.replace("##", "").replace("Ġ", "")
+            buffer += clean
+            buffer_score += score
+            buffer_count += 1
+        else:
+            # 新词开始，先保存前一个词
+            if buffer:
+                avg_score = buffer_score / max(buffer_count, 1)
+                word_scores.append((buffer, avg_score))
+
+            # 去除 Ġ 前缀
+            clean = tok.replace("Ġ", "")
+            if _is_punct(clean):
+                buffer = ""
+                buffer_score = 0.0
+                buffer_count = 0
+                continue
+            buffer = clean
+            buffer_score = score
+            buffer_count = 1
+
+    # 最后一个词
+    if buffer and not _is_punct(buffer):
+        avg_score = buffer_score / max(buffer_count, 1)
+        word_scores.append((buffer, avg_score))
+
+    word_scores.sort(key=lambda x: x[1], reverse=True)
+    return word_scores[:top_k]
 
 
 def generate_attention_highlight(
@@ -136,11 +186,7 @@ def generate_attention_highlight(
     input_ids: torch.Tensor,
     importance_scores: torch.Tensor,
 ) -> str:
-    """生成带注意力高亮的文本（Markdown 格式）。
-
-    分数 >= 0.7: **加粗**
-    分数 >= 0.4: *斜体*
-    分数 < 0.4:  普通
+    """生成带注意力高亮的文本（Markdown 格式，自动合并 subword）。
 
     Args:
         tokenizer: HuggingFace tokenizer。
@@ -148,45 +194,57 @@ def generate_attention_highlight(
         importance_scores: 重要性分数，形状 (1, seq_len)。
 
     Returns:
-        带高亮标记的文本。
+        带高亮标记的文本（**加粗**=高关注，*斜体*=中等关注）。
     """
     scores = importance_scores[0]
     ids = input_ids[0]
+    tokens = tokenizer.convert_ids_to_tokens(ids.tolist())
 
-    # 归一化分数到 0~1
+    # 归一化分数
     scores = (scores - scores.min()) / (scores.max() - scores.min() + 1e-8)
 
     parts = []
     buffer = ""
+    buffer_scores = []
 
-    for i in range(len(ids)):
-        token_id = ids[i].item()
-        if token_id in [tokenizer.cls_token_id, tokenizer.sep_token_id, tokenizer.pad_token_id]:
+    for i, (tid, tok, score) in enumerate(zip(ids.tolist(), tokens, scores.tolist())):
+        if tid in [tokenizer.cls_token_id, tokenizer.sep_token_id, tokenizer.pad_token_id]:
             continue
 
-        word = tokenizer.decode([token_id])
-        score = scores[i].item()
-
-        # 处理 subword（如 "##ing"）
-        if word.startswith("##"):
-            buffer += word[2:]
-            continue
-
-        if buffer:
-            parts.append(buffer)
-            buffer = ""
-
-        if score >= 0.7:
-            parts.append(f"**{word}**")
-        elif score >= 0.4:
-            parts.append(f"*{word}*")
+        if _is_continuation(tok):
+            clean = tok.replace("##", "").replace("Ġ", "")
+            buffer += clean
+            buffer_scores.append(score)
         else:
-            parts.append(word)
+            # 保存前一个完整词
+            if buffer:
+                avg = sum(buffer_scores) / max(len(buffer_scores), 1)
+                _append_highlighted(parts, buffer, avg)
+                buffer = ""
+                buffer_scores = []
 
+            clean = tok.replace("Ġ", "")
+            buffer = clean
+            buffer_scores = [score]
+
+    # 最后一个词
     if buffer:
-        parts.append(buffer)
+        avg = sum(buffer_scores) / max(len(buffer_scores), 1)
+        _append_highlighted(parts, buffer, avg)
 
     return " ".join(parts)
+
+
+def _append_highlighted(parts: list, word: str, score: float):
+    """根据分数将词加上高亮标记，追加到 parts 列表。"""
+    if _is_punct(word):
+        parts.append(word)
+    elif score >= 0.7:
+        parts.append(f"**{word}**")
+    elif score >= 0.4:
+        parts.append(f"*{word}*")
+    else:
+        parts.append(word)
 
 
 def visualize_attention_heatmap(

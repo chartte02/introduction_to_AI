@@ -37,7 +37,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from model.preprocessing import clean_text
 from model.model import RumorClassifier
-<<<<<<< HEAD
 from model.attention_viz import (
     extract_attention,
     extract_token_importance,
@@ -45,9 +44,7 @@ from model.attention_viz import (
     generate_attention_highlight,
     visualize_attention_heatmap,
 )
-=======
 from model.trainer import load_threshold
->>>>>>> b447786109175a9f5c66f2531b5532079f53e66b
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -74,12 +71,8 @@ def predict_single(
         return_attentions: 是否返回注意力权重。
 
     Returns:
-<<<<<<< HEAD
-        包含 label, label_name, confidence 的字典。
+        包含 label, label_name, confidence, threshold 的字典。
         如果 return_attentions=True，还包含 attentions, input_ids, attention_mask。
-=======
-        {"label": 0/1, "label_name": "谣言"/"非谣言", "confidence": 0.XX, "threshold": τ}
->>>>>>> b447786109175a9f5c66f2531b5532079f53e66b
     """
     clean = clean_text(text)
     encoded = tokenizer(
@@ -95,24 +88,19 @@ def predict_single(
 
     threshold = load_threshold()
     model.eval()
-<<<<<<< HEAD
-=======
+
+    # 单次前向传播（需要注意力时用 return_attentions=True）
     with torch.no_grad():
-        logits = model(input_ids, attention_mask)
-        probs = torch.softmax(logits, dim=1)
-        pred = 1 if probs[0, 1].item() > threshold else 0
-        confidence = probs[0, pred].item()
->>>>>>> b447786109175a9f5c66f2531b5532079f53e66b
+        outputs = model(input_ids, attention_mask, return_attentions=return_attentions)
 
     if return_attentions:
-        logits, attentions = model(input_ids, attention_mask, return_attentions=True)
+        logits, attentions = outputs
     else:
-        with torch.no_grad():
-            logits = model(input_ids, attention_mask)
+        logits = outputs
         attentions = None
 
     probs = torch.softmax(logits, dim=1)
-    pred = torch.argmax(logits, dim=1).item()
+    pred = 1 if probs[0, 1].item() > threshold else 0
     confidence = probs[0, pred].item()
 
     result = {
