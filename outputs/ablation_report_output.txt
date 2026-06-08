@@ -1,0 +1,68 @@
+Reading log files...
+======================================================================
+Ablation Study Results
+======================================================================
+
+[Table 1: Overall Performance]
+----------------------------------------------------------------------
+Metric               Without Preproc      With Preproc         Change         
+----------------------------------------------------------------------
+Accuracy             88.03%             88.78%             +0.75%
+Macro F1             0.8782                 0.8831                 +0.0049
+----------------------------------------------------------------------
+
+[Table 2: Rumor Class Metrics]
+----------------------------------------------------------------------
+Metric               Without Preproc      With Preproc         Change         
+----------------------------------------------------------------------
+Precision            0.8671                 0.9452                 +0.0781
+Recall               0.8571                 0.7886                 -0.0685
+F1                   0.8621                 0.8598                 -0.0023
+----------------------------------------------------------------------
+
+[Table 3: Confusion Matrix]
+----------------------------------------------------------------------
+Version         TP       TN       FP       FN      
+----------------------------------------------------------------------
+Without Preproc 150      203      23       25      
+With Preproc    138      218      8        37      
+----------------------------------------------------------------------
+
+======================================================================
+[Conclusion for Report]
+======================================================================
+
+Ablation Study: Impact of Preprocessing on Model Performance
+
+Experimental Setup:
+- Without Preprocessing: Raw tweet text directly fed into the model
+- With Preprocessing: Text cleaned via HTML decoding, URL replacement, @mention replacement, # removal, whitespace merging
+
+Results Comparison:
+
+| Metric | Without Preproc | With Preproc | Change |
+|:---|:---:|:---:|:---:|
+| Accuracy | 88.03% | 88.78% | +0.75% |
+| Macro F1 | 0.8782 | 0.8831 | +0.0049 |
+| Rumor Precision | 0.8671 | 0.9452 | +0.0781 |
+| Rumor Recall | 0.8571 | 0.7886 | -0.0685 |
+| Rumor F1 | 0.8621 | 0.8598 | -0.0023 |
+
+Analysis:
+1. With preprocessing achieves Accuracy of 88.78%, which is +0.75% higher than without preprocessing (88.03%).
+2. With preprocessing achieves Macro F1 of 0.8831, higher than without preprocessing (0.8782).
+3. For rumor class, With preprocessing has significantly higher Precision (0.9452 vs 0.8671), meaning predictions are more reliable.
+4. Without preprocessing has higher Recall (0.8571 vs 0.7886), meaning it catches more real rumors.
+5. Both versions have very similar F1 scores (0.8621 vs 0.8598).
+
+Conclusion:
+Preprocessing provides a positive but limited improvement to model performance. The version with preprocessing performs better in overall accuracy and precision, while the version without preprocessing performs better in recall. Considering that false positives (misclassifying non-rumor as rumor) have a higher cost in rumor detection scenarios, we select the version with preprocessing as our final model.
+
+
+Generating comparison chart...
+
+Generated files:
+  - ablation_report_output.txt (console output)
+  - ablation_study.png (comparison chart)
+
+======================================================================
